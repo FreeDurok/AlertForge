@@ -11,8 +11,8 @@
   "secondary_text": "#94A3B8",
   "card_bg": "#1E293B",
   "logo_path": "logo.png",
-  "logo_bg_replace": true,
-  "logo_bg_color": "black",
+  "logo_bg_replace": false,
+  "logo_bg_color": null,
   "_comments": {
     "title": "Titolo principale del bollettino",
     "organization": "Nome dell'organizzazione o team",
