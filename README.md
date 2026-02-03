@@ -13,6 +13,9 @@ pip install -r requirements.txt
 ## Utilizzo
 
 ```bash
+# Default - carica bulletins.json e config.json
+python alertforge.py -o output.png
+
 # Singolo file
 python alertforge.py -i bulletins.example.json -o output.png
 
