@@ -46,3 +46,6 @@ output/
 
 # Claude files
 .claude
+
+# test files
+*.example.json

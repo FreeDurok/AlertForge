@@ -24,20 +24,21 @@ from datetime import datetime
 
 class Severity(Enum):
     """Livelli di severity con colori associati."""
-    CRITICAL = ("critical", "#DC2626", "#FEE2E2", "⚠️")  # Rosso
-    HIGH = ("high", "#EA580C", "#FFEDD5", "🔴")           # Arancione
-    MEDIUM = ("medium", "#CA8A04", "#FEF9C3", "🟡")      # Giallo
-    LOW = ("low", "#16A34A", "#DCFCE7", "🟢")            # Verde
-    INFO = ("info", "#2563EB", "#DBEAFE", "ℹ️")          # Blu
+    CRITICAL = ("critical", "#DC2626", "#FEE2E2", "●")  # Rosso
+    HIGH = ("high", "#EA580C", "#FFEDD5", "●")           # Arancione
+    MEDIUM = ("medium", "#CA8A04", "#FEF9C3", "●")      # Giallo
+    LOW = ("low", "#16A34A", "#DCFCE7", "●")            # Verde
+    INFO = ("info", "#2563EB", "#DBEAFE", "●")          # Blu
 
 
 class Category(Enum):
     """Categorie di bollettini."""
-    AGGIORNAMENTI = ("aggiornamenti", "🔄", "Aggiornamenti")
-    VULNERABILITA = ("vulnerabilita", "🛡️", "Vulnerabilità")
-    PATCH = ("patch", "🩹", "Patch")
-    ADVISORY = ("advisory", "📢", "Advisory")
-    INCIDENT = ("incident", "🚨", "Incident")
+    AGGIORNAMENTI = ("aggiornamenti", "↻", "Aggiornamenti")
+    VULNERABILITA = ("vulnerabilita", "◆", "Vulnerabilità")
+    PATCH = ("patch", "✦", "Patch")
+    ADVISORY = ("advisory", "▶", "Advisory")
+    INCIDENT = ("incident", "▲", "Incident")
+    EXPLOIT = ("exploit", "✖", "Exploit")
 
 
 @dataclass
@@ -578,6 +579,68 @@ class SecurityBulletinGenerator:
 
         return 300  # Y position dopo header
     
+    def _get_card_spacing(self, compact: bool = False, has_tags: bool = False) -> dict:
+        """Restituisce le spaziature per la card in base alla modalità."""
+        if compact:
+            return {
+                'padding_top': 30,
+                'padding_bottom': 35,
+                'tag_section_height': 70 if has_tags else 0,
+                'spacing_category': 60,
+                'spacing_product': 55,
+                'spacing_cve': 70,
+                'spacing_cve_desc': 70,
+                'spacing_no_cve': 80,
+                'line_height': 44,
+                'max_desc_lines': 5,
+                'badge_margin': 35,
+                'badge_width': 280,
+            }
+        else:
+            return {
+                'padding_top': 40,
+                'padding_bottom': 50,
+                'tag_section_height': 90 if has_tags else 0,
+                'spacing_category': 80,
+                'spacing_product': 70,
+                'spacing_cve': 90,
+                'spacing_cve_desc': 80,
+                'spacing_no_cve': 100,
+                'line_height': 58,
+                'max_desc_lines': 6,
+                'badge_margin': 50,
+                'badge_width': 320,
+            }
+
+    def _wrap_description(self, description: str, card_width: int) -> list[str]:
+        """Wrappa la descrizione rispettando i \\n espliciti."""
+        wrap_width = int(card_width / 22)
+        wrapped = []
+        for paragraph in description.split('\n'):
+            paragraph = paragraph.strip()
+            if paragraph:
+                wrapped.extend(textwrap.wrap(paragraph, width=wrap_width))
+            else:
+                wrapped.append('')  # Riga vuota per separare paragrafi
+        return wrapped
+
+    def _calculate_card_height(self, item: BulletinItem, card_width: int, compact: bool = False) -> int:
+        """Calcola l'altezza necessaria per la card in base al contenuto."""
+        s = self._get_card_spacing(compact, bool(item.tags))
+        
+        content_height = s['padding_top'] + s['spacing_category'] + s['spacing_product']
+
+        if item.cve_id:
+            content_height += s['spacing_cve'] + s['spacing_cve_desc']
+        else:
+            content_height += s['spacing_no_cve']
+
+        wrapped_desc = self._wrap_description(item.description, card_width)
+        desc_lines = min(len(wrapped_desc), s['max_desc_lines'])
+        content_height += desc_lines * s['line_height']
+
+        return content_height + s['tag_section_height'] + s['padding_bottom']
+
     def _draw_item_card(self, draw: ImageDraw, image: Image, x: int, y: int,
                         item: BulletinItem, card_width: int, min_height: int = 0, compact: bool = False) -> int:
         """
@@ -592,58 +655,22 @@ class SecurityBulletinGenerator:
             La posizione Y finale dopo la card (e l'eventuale immagine)
         """
         _, severity_color, _, _ = item.severity.value
-
         inner_x = x + 50
         
-        # Spaziature diverse per modalità normale e compatta
-        if compact:
-            padding_top = 30
-            padding_bottom = 35
-            tag_section_height = 70 if item.tags else 0
-            spacing_category = 60
-            spacing_product = 55
-            spacing_cve = 70  # Aumentato
-            spacing_cve_desc = 70  # Aumentato
-            spacing_no_cve = 80
-            line_height = 44
-            max_desc_lines = 3  # Meno righe in modalità compatta
-        else:
-            padding_top = 40
-            padding_bottom = 50
-            tag_section_height = 90 if item.tags else 0
-            spacing_category = 80
-            spacing_product = 70
-            spacing_cve = 90
-            spacing_cve_desc = 80
-            spacing_no_cve = 100
-            line_height = 58
-            max_desc_lines = 6
+        # Ottieni spaziature e wrappa descrizione
+        s = self._get_card_spacing(compact, bool(item.tags))
+        wrapped_desc = self._wrap_description(item.description, card_width)
+        desc_lines = min(len(wrapped_desc), s['max_desc_lines'])
 
-        # Calcola altezza contenuto (senza tag)
-        content_height = padding_top
-
-        # Categoria + severity badge
-        content_height += spacing_category
-
-        # Prodotto
-        content_height += spacing_product
-
-        # CVE ID se presente
+        # Calcola altezza card
+        content_height = s['padding_top'] + s['spacing_category'] + s['spacing_product']
         if item.cve_id:
-            content_height += spacing_cve + spacing_cve_desc
+            content_height += s['spacing_cve'] + s['spacing_cve_desc']
         else:
-            content_height += spacing_no_cve
-
-        # Descrizione
-        wrap_width = int(card_width / 22)
-        wrapped_desc = textwrap.wrap(item.description, width=wrap_width)
-        desc_lines = min(len(wrapped_desc), max_desc_lines)
-        content_height += desc_lines * line_height
-
-        # Calcola altezza card totale (contenuto + spazio tag + padding)
-        card_height = content_height + tag_section_height + padding_bottom
+            content_height += s['spacing_no_cve']
+        content_height += desc_lines * s['line_height']
         
-        # Se specificata un'altezza minima, usa quella (per espandere la card senza immagine)
+        card_height = content_height + s['tag_section_height'] + s['padding_bottom']
         if min_height > 0 and card_height < min_height:
             card_height = min_height
 
@@ -659,51 +686,53 @@ class SecurityBulletinGenerator:
         draw.rectangle((x, y + 24, x + 10, y + card_height - 24),
                        fill=self._hex_to_rgb(severity_color))
 
-        # Ora disegna il contenuto
-        inner_y = y + padding_top
+        # Contenuto della card
+        inner_y = y + s['padding_top']
 
-        # Prima riga: Categoria + Severity badge
+        # Categoria
         _, _, category_label = item.category.value
         draw.text((inner_x, inner_y), category_label.upper(),
                   fill=self._hex_to_rgb(self.config.accent_color),
-                  font=self.font_body)  # Font più grande per la tipologia
+                  font=self.font_body)
 
-        # Severity badge a destra (stesso margine dal top e dal right)
-        badge_margin = 50 if not compact else 35
-        badge_width = 320 if not compact else 280
-        self._draw_severity_badge(draw, x + card_width - badge_width - badge_margin, y + badge_margin,
-                                  item.severity, width=badge_width)
+        # Severity badge
+        self._draw_severity_badge(
+            draw, 
+            x + card_width - s['badge_width'] - s['badge_margin'], 
+            y + s['badge_margin'],
+            item.severity, 
+            width=s['badge_width']
+        )
 
         # Prodotto
-        inner_y += spacing_category
-        product_text = item.product
-        if item.version:
-            product_text += f" v{item.version}"
+        inner_y += s['spacing_category']
+        product_text = f"{item.product} v{item.version}" if item.version else item.product
         draw.text((inner_x, inner_y), product_text,
                   fill=self._hex_to_rgb(self.config.text_color),
-                  font=self.font_heading)  # Sempre bold per il titolo
+                  font=self.font_heading)
 
-        # CVE ID se presente
+        # CVE ID
         if item.cve_id:
-            inner_y += spacing_cve
+            inner_y += s['spacing_cve']
             draw.text((inner_x, inner_y), item.cve_id,
                       fill=self._hex_to_rgb("#EF4444"),
                       font=self.font_cve if not compact else self.font_body)
-            inner_y += spacing_cve_desc
+            inner_y += s['spacing_cve_desc']
         else:
-            inner_y += spacing_no_cve
+            inner_y += s['spacing_no_cve']
 
         # Descrizione
-        for line in wrapped_desc[:max_desc_lines]:
+        desc_font = self.font_body if not compact else self.font_small
+        for line in wrapped_desc[:s['max_desc_lines']]:
             draw.text((inner_x, inner_y), line,
                       fill=self._hex_to_rgb(self.config.secondary_text),
-                      font=self.font_body if not compact else self.font_small)
-            inner_y += line_height
+                      font=desc_font)
+            inner_y += s['line_height']
 
-        # Tags - sempre allineati al bottom della card
+        # Tags
         if item.tags:
             tag_height = 68 if not compact else 52
-            tag_y = y + card_height - padding_bottom - tag_height
+            tag_y = y + card_height - s['padding_bottom'] - tag_height
             tag_x = inner_x
             max_tags = 6 if not compact else 4
             for tag in item.tags[:max_tags]:
@@ -711,7 +740,6 @@ class SecurityBulletinGenerator:
                     break
                 tag_x += self._draw_tag(draw, tag_x, tag_y, tag, compact=compact)
 
-        # Posizione Y dopo la card (l'immagine viene gestita separatamente in generate())
         return y + card_height + 40
     
     def _draw_footer(self, draw: ImageDraw, height: int):
@@ -758,27 +786,31 @@ class SecurityBulletinGenerator:
         # Card singola a larghezza piena
         card_x = 80
         
-        # Calcola spazio disponibile per la card (dal header al footer)
+        # Calcola spazio disponibile totale (dal header al footer)
         available_height = current_height - y_offset - footer_height - 40  # 40 = margine
         
         # Carica immagine allegata se presente
         attached_img = None
         attached_img_size = (0, 0)
+        compact_mode = False
         
         if item.image_path and os.path.exists(item.image_path):
             try:
                 attached_img = Image.open(item.image_path)
                 attached_img = attached_img.convert("RGBA")
+                compact_mode = True
                 
-                # Calcola lo spazio disponibile per l'immagine
-                # L'immagine va sotto la card, quindi calcoliamo quanto spazio abbiamo
-                # Stimiamo l'altezza minima della card (senza espansione)
-                min_card_height = 450  # Altezza minima stimata per la card
-                space_for_image = available_height - min_card_height - 40  # 40 = margine tra card e immagine
+                # Calcola l'altezza effettiva della card in modalità compact
+                actual_card_height = self._calculate_card_height(item, card_width, compact=True)
                 
-                if space_for_image > 100:  # Solo se c'è abbastanza spazio
+                # Spazio rimanente per l'immagine
+                space_for_image = available_height - actual_card_height - 40  # 40 = margine tra card e immagine
+                
+                min_img_height = 150  # Altezza minima per l'immagine
+                
+                if space_for_image >= min_img_height:
                     max_img_width = card_width - 80
-                    max_img_height = min(space_for_image, 600)  # Max 600px o lo spazio disponibile
+                    max_img_height = space_for_image
                     
                     img_ratio = attached_img.width / attached_img.height
                     new_width = min(attached_img.width, max_img_width)
@@ -791,24 +823,22 @@ class SecurityBulletinGenerator:
                     attached_img = attached_img.resize((new_width, new_height), Image.LANCZOS)
                     attached_img_size = (new_width, new_height)
                 else:
-                    # Non c'è spazio sufficiente, ignora l'immagine
-                    print(f"⚠️  Spazio insufficiente per l'immagine, verrà omessa")
+                    # Non c'è spazio sufficiente, ometti l'immagine
+                    print(f"⚠️  Spazio insufficiente per l'immagine ({space_for_image}px disponibili, minimo {min_img_height}px), verrà omessa")
                     attached_img = None
+                    compact_mode = False  # Torna a modalità normale
                     
             except Exception as e:
                 print(f"⚠️  Errore caricamento immagine {item.image_path}: {e}")
                 attached_img = None
 
-        # Calcola altezza della card
+        # Calcola altezza minima della card
         if attached_img:
-            # Con immagine: la card è compatta, l'immagine va sotto
-            card_height = available_height - attached_img_size[1] - 40  # 40 = spazio tra card e immagine
-            card_min_height = card_height
-            compact_mode = True
+            # Con immagine: usa l'altezza calcolata della card
+            card_min_height = self._calculate_card_height(item, card_width, compact=True)
         else:
             # Senza immagine: la card riempie tutto lo spazio disponibile
             card_min_height = available_height
-            compact_mode = False
 
         # Disegna la card
         card_end_y = self._draw_item_card(draw, image, card_x, y_offset, item, card_width, card_min_height, compact=compact_mode)
