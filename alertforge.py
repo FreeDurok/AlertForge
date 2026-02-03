@@ -3,7 +3,7 @@
 AlertForge - Security Bulletin Infographic Generator
 Genera infografiche professionali per bollettini di sicurezza.
 
-Autore: Security Team
+Autore: @Durok
 Versione: 1.0
 """
 
