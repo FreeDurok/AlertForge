@@ -1,0 +1,32 @@
+{
+  "title": "Institution Name",
+  "organization": "Security Operations Center",
+  "date": null,
+  "footer_text": "Confidential - Internal Use Only",
+  "width": 2400,
+  "height": 1600,
+  "background_color": "#0F172A",
+  "accent_color": "#3B82F6",
+  "text_color": "#F8FAFC",
+  "secondary_text": "#94A3B8",
+  "card_bg": "#1E293B",
+  "logo_path": "logo.png",
+  "logo_bg_replace": true,
+  "logo_bg_color": "black",
+  "_comments": {
+    "title": "Titolo principale del bollettino",
+    "organization": "Nome dell'organizzazione o team",
+    "date": "Data del bollettino (null = data corrente automatica)",
+    "footer_text": "Testo del footer",
+    "width": "Larghezza immagine in pixel",
+    "height": "Altezza immagine in pixel (viene calcolata automaticamente se ci sono molti item)",
+    "background_color": "Colore sfondo principale (formato HEX)",
+    "accent_color": "Colore accento per elementi decorativi",
+    "text_color": "Colore testo principale",
+    "secondary_text": "Colore testo secondario",
+    "card_bg": "Colore sfondo delle card",
+    "logo_path": "Percorso opzionale del logo (PNG o JPEG)",
+    "logo_bg_replace": "Se true, sostituisce lo sfondo del logo con il colore di sfondo della canvas",
+    "logo_bg_color": "Colore da sostituire: 'black'/'dark', 'white'/'light', '#RRGGBB', o null per auto-detect"
+  }
+}

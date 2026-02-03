@@ -1,0 +1,54 @@
+{
+  "bulletins": [
+    {
+      "category": "vulnerabilita",
+      "severity": "critical",
+      "product": "Microsoft Exchange Server",
+      "description": "Vulnerabilità critica di esecuzione remota di codice che consente ad attaccanti non autenticati di eseguire codice arbitrario sul server. Si consiglia di applicare immediatamente le patch di sicurezza disponibili.",
+      "tags": ["RCE", "Zero-Day", "Exchange", "Patch Now"],
+      "cve_id": "CVE-2024-21410",
+      "version": "2019/2016"
+    },
+    {
+      "category": "aggiornamenti",
+      "severity": "high",
+      "product": "Apache Log4j",
+      "description": "Aggiornamento di sicurezza per risolvere vulnerabilità di deserializzazione che potrebbe permettere l'esecuzione di codice remoto su sistemi non aggiornati.",
+      "tags": ["Java", "Logging", "Patch"],
+      "cve_id": "CVE-2024-17834",
+      "version": "2.23.0"
+    },
+    {
+      "category": "aggiornamenti",
+      "severity": "medium",
+      "product": "Linux Kernel",
+      "description": "Patch per vulnerabilità di privilege escalation nel sottosistema netfilter. Richiede accesso locale al sistema per essere sfruttata. Ora scrivo in modo esteso per testare come viene un testo lungo su un bollettino con immagine, devo essere sicuro che nulla si sovrapponga.",
+      "tags": ["Linux", "PrivEsc", "Kernel"],
+      "cve_id": "CVE-2024-0193",
+      "version": "6.7.2",
+      "image": "netfilter.png"
+    },
+    {
+      "category": "advisory",
+      "severity": "low",
+      "product": "OpenSSH",
+      "description": "Advisory informativo riguardante best practices per la configurazione sicura di OpenSSH in ambienti enterprise. Nessuna azione urgente richiesta.",
+      "tags": ["SSH", "Hardening", "Config", "Best Practice"],
+      "version": "9.6",
+      "image": "image3.png"
+    }
+  ],
+  "_format_info": {
+    "description": "File di esempio per bollettini di sicurezza. Ogni bollettino genera un'immagine separata.",
+    "fields": {
+      "category": "Valori: aggiornamenti, vulnerabilita, patch, advisory, incident",
+      "severity": "Valori: critical, high, medium, low, info",
+      "product": "Nome del prodotto o software (obbligatorio)",
+      "description": "Descrizione della vulnerabilità o aggiornamento (obbligatorio)",
+      "tags": "Array di tag/etichette (opzionale, max 6 mostrati)",
+      "cve_id": "Identificativo CVE (opzionale, formato: CVE-YYYY-NNNNN)",
+      "version": "Versione del prodotto interessato (opzionale)",
+      "image": "Percorso a un'immagine da mostrare sotto la card (opzionale)"
+    }
+  }
+}

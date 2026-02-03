@@ -1,0 +1,4 @@
+# Security Bulletin Infographic Generator - Dependencies
+# Python 3.10+ required
+
+Pillow>=12.1.0
