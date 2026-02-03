@@ -1,6 +1,14 @@
 {
   "bulletins": [
     {
+      "category": "exploit",
+      "severity": "critical",
+      "product": "Ivanti Endpoint Manager Mobile (EPMM)",
+      "description": "Rilasciati aggiornamenti di sicurezza per risolvere due vulnerabilità, di gravità critica, di cui una 0-day attivamente sfruttata.\n\nTipologia: Remote Code Execution\n\nImportante aggiornare i prodotti interessati.",
+      "tags": ["0-Day", "Remote Command Execution", "Exploited", "Patch Now"],
+      "cve_id": "CVE-2025-4427"
+    },
+    {
       "category": "vulnerabilita",
       "severity": "critical",
       "product": "Microsoft Exchange Server",
@@ -22,7 +30,7 @@
       "category": "aggiornamenti",
       "severity": "medium",
       "product": "Linux Kernel",
-      "description": "Patch per vulnerabilità di privilege escalation nel sottosistema netfilter. Richiede accesso locale al sistema per essere sfruttata. Ora scrivo in modo esteso per testare come viene un testo lungo su un bollettino con immagine, devo essere sicuro che nulla si sovrapponga.",
+      "description": "Patch per vulnerabilità di privilege escalation nel sottosistema netfilter.\n\nRichiede accesso locale al sistema per essere sfruttata.\n\nOra scrivo in modo esteso per testare.",
       "tags": ["Linux", "PrivEsc", "Kernel"],
       "cve_id": "CVE-2024-0193",
       "version": "6.7.2",
